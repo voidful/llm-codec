@@ -1,0 +1,91 @@
+# macOS / OS metadata
+.DS_Store
+._*
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local agent / assistant state
+.claude/
+.codex/
+.agents/
+
+# Python cache / build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+!webpage/audio/env/
+!webpage/audio/env/**
+
+# Environment and secrets
+.env
+.env.*
+*.env
+
+# Logs
+*.log
+logs/
+
+# Training outputs and experiment tracking
+runs/
+checkpoints/
+outputs/
+wandb/
+lightning_logs/
+tensorboard/
+unicodec_model/
+wavtokenizer_model/
+external_codecs/
+core
+core.*
+
+# Datasets and local caches
+dataset/
+datasets/
+data/
+.cache/
+cache/
+hf_cache/
+
+# Model checkpoints and large ML artifacts
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+*.onnx
+*.gguf
+
+# Generated audio / media artifacts
+*.wav
+!webpage/audio/
+!webpage/audio/**/*.wav
+!webpage/audio/**/.gitkeep
+*.flac
+*.mp3
+*.ogg
+*.m4a
+*.aac
+*.npy
+*.npz
+
+# Project-local legacy / removed scripts
+run_train_lm.sh
