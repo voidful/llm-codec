@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Codec: Neural Audio Codec Meets Language Model Objectives</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0C0E12;
+            --bg-card: #13161D;
+            --bg-card-hover: #181C25;
+            --border: #1E2330;
+            --border-accent: #2A3040;
+            --text: #E8ECF4;
+            --text-secondary: #8B93A7;
+            --text-muted: #5A6278;
+            --accent: #6C8CFF;
+            --accent-glow: rgba(108, 140, 255, 0.15);
+            --accent-warm: #FF8C6C;
+            --accent-green: #6CFFA8;
+            --gradient-1: linear-gradient(135deg, #6C8CFF 0%, #A86CFF 100%);
+            --gradient-2: linear-gradient(135deg, #FF8C6C 0%, #FFB86C 100%);
+            --gradient-3: linear-gradient(135deg, #6CFFA8 0%, #6CFFE0 100%);
+            --serif: 'DM Serif Display', Georgia, serif;
+            --sans: 'DM Sans', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(12, 14, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+        }
+
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+
+        nav .nav-logo {
+            font-family: var(--serif);
+            font-size: 1rem;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        nav .nav-logo span {
+            color: var(--accent);
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        nav .nav-links a {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav .nav-links a:hover {
+            color: var(--text);
+        }
+
+        
+        .hero {
+            padding: 130px 0 70px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(108, 140, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            animation: fadeUp 0.8s ease both;
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .hero h1 {
+            font-family: var(--serif);
+            font-size: clamp(2.4rem, 5vw, 3.6rem);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            animation: fadeUp 0.8s ease 0.1s both;
+        }
+
+        .hero h1 .gradient-text {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 680px;
+            margin: 0 auto 36px;
+            animation: fadeUp 0.8s ease 0.2s both;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.8s ease 0.3s both;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .value {
+            font-family: var(--mono);
+            font-size: 1.6rem;
+            font-weight: 500;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-stat .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        .links-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 32px;
+            animation: fadeUp 0.8s ease 0.4s both;
+            flex-wrap: wrap;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .link-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .link-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .link-btn.primary:hover {
+            filter: brightness(1.15);
+        }
+
+        .link-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        
+        section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-header {
+            margin-bottom: 48px;
+        }
+
+        .section-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: var(--serif);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            max-width: 640px;
+            font-size: 0.95rem;
+        }
+
+        
+        .arch-figure {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .arch-figure img {
+            width: 100%;
+            display: block;
+        }
+
+        .arch-placeholder {
+            padding: 60px 32px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .arch-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            width: fit-content;
+            margin-bottom: 40px;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            border-radius: 100px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .tab-btn:not(.active):hover {
+            color: var(--text);
+            background: var(--bg-card-hover);
+        }
+
+        .tab-btn .count {
+            font-family: var(--mono);
+            font-size: 10px;
+            margin-left: 6px;
+            opacity: 0.6;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        
+        .sample-group {
+            margin-bottom: 48px;
+        }
+
+        .sample-group-title {
+            font-family: var(--serif);
+            font-size: 1.15rem;
+            margin-bottom: 6px;
+        }
+
+        .sample-group-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            margin-bottom: 20px;
+        }
+
+        .sample-transcript {
+            padding: 12px 16px;
+            background: rgba(108, 140, 255, 0.06);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .audio-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--border);
+            transition: background 0.3s ease;
+        }
+
+        .audio-card:hover {
+            border-color: var(--border-accent);
+            background: var(--bg-card-hover);
+        }
+
+        .audio-card.ours::before {
+            background: var(--gradient-1);
+        }
+
+        .audio-card .model-name {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .audio-card.ours .model-name {
+            color: var(--accent);
+        }
+
+        .audio-card audio {
+            width: 100%;
+            height: 36px;
+            border-radius: 6px;
+        }
+
+        
+        .results-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .results-table thead th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .results-table tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .results-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .results-table tbody tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        .results-table .model-col {
+            font-family: var(--sans);
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .results-table .highlight-row td {
+            background: rgba(108, 140, 255, 0.05);
+            color: var(--text);
+        }
+
+        .results-table .highlight-row .model-col {
+            color: var(--accent);
+        }
+
+        .results-table .best {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        
+        .method-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .method-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .method-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-2px);
+        }
+
+        .method-card .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .method-card:nth-child(1) .card-icon {
+            background: rgba(108, 140, 255, 0.12);
+        }
+
+        .method-card:nth-child(2) .card-icon {
+            background: rgba(255, 140, 108, 0.12);
+        }
+
+        .method-card:nth-child(3) .card-icon {
+            background: rgba(108, 255, 168, 0.12);
+        }
+
+        .method-card h3 {
+            font-family: var(--serif);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .method-card p {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .abstract-content {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.85;
+            max-width: 780px;
+        }
+
+        .paper-meta {
+            margin: 0 0 20px;
+            padding: 16px 18px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .paper-meta strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .paper-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .paper-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        .paper-links a:hover {
+            color: var(--accent-2);
+        }
+
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--accent);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero {
+                padding: 80px 0 40px;
+            }
+
+            section {
+                padding: 48px 0;
+            }
+
+            .hero-stats {
+                gap: 28px;
+            }
+
+            .tab-nav {
+                flex-wrap: wrap;
+                border-radius: var(--radius);
+            }
+
+            .tab-btn {
+                border-radius: var(--radius-sm);
+            }
+
+            .audio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav .nav-links {
+                gap: 16px;
+            }
+
+            nav .nav-links a {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body id="top">
+
+    
+    <nav>
+        <div class="nav-inner">
+            <a class="nav-logo" href="#top"><span>LLM</span>-Codec</a>
+            <div class="nav-links">
+                <a href="#abstract">Abstract</a>
+                <a href="#method">Method</a>
+                <a href="#samples">Samples</a>
+                <a href="#results">Results</a>
+            </div>
+        </div>
+    </nav>
+
+    
+    <header class="hero">
+        <div class="container">
+            <div class="hero-badge"><span class="dot"></span>arXiv:2604.17852</div>
+            <h1>
+                <span class="gradient-text">LLM-Codec</span><br>
+                Neural Audio Codec Meets<br>Language Model Objectives
+            </h1>
+            <p class="subtitle">
+                Training neural audio codecs with language-model-facing objectives to produce tokens that are both
+                reconstructable and predictable under autoregressive modeling.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="value">61.6%</div>
+                    <div class="label">SALMon Accuracy</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value">35&times;</div>
+                    <div class="label">Perplexity Reduction</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value">5.0%</div>
+                    <div class="label">Mel Distance Improv.</div>
+                </div>
+            </div>
+            <div class="links-bar">
+                <a class="link-btn primary" href="https://arxiv.org/abs/2604.17852" target="_blank"
+                    rel="noopener noreferrer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    Paper
+                </a>
+                <a class="link-btn" href="https://github.com/voidful/llm-codec" target="_blank"
+                    rel="noopener noreferrer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                    </svg>
+                    Code
+                </a>
+                <a class="link-btn" href="https://huggingface.co/voidful/llm-codec" target="_blank"
+                    rel="noopener noreferrer">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Hugging Face
+                </a>
+            </div>
+        </div>
+    </header>
+
+    
+    <section id="abstract">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Abstract</div>
+                <h2 class="section-title">Bridging Reconstruction &amp; Prediction</h2>
+            </div>
+            <div class="abstract-content">
+                <div class="paper-meta">
+                    <strong>LLM-Codec: Neural Audio Codec Meets Language Model Objectives</strong> studies the
+                    mismatch between reconstruction-trained neural audio codecs and prediction-trained spoken language
+                    models. The paper introduces language-model-facing codec training objectives and releases the
+                    training code, model checkpoint, and Codec-SUPERB webpage examples.
+                    <div class="paper-links">
+                        <a href="https://arxiv.org/abs/2604.17852" target="_blank" rel="noopener noreferrer">arXiv</a>
+                        <a href="https://github.com/voidful/llm-codec" target="_blank"
+                            rel="noopener noreferrer">GitHub</a>
+                        <a href="https://huggingface.co/voidful/llm-codec" target="_blank"
+                            rel="noopener noreferrer">Hugging Face</a>
+                    </div>
+                </div>
+                <p>Neural audio codecs are widely used as tokenizers for spoken language models, but they are optimized
+                    for waveform reconstruction rather than autoregressive prediction. This mismatch injects
+                    acoustically driven uncertainty into the discrete token space and increases language-model
+                    perplexity.</p>
+                <br>
+                <p>We propose <strong style="color:var(--accent)">LLM-Codec</strong>, which trains the codec encoder
+                    with language-model-facing objectives while keeping both codec and LLM architectures unchanged.
+                    LLM-Codec introduces <em>(i)</em> future token prediction with Medusa-style multi-step heads to
+                    encourage multi-step predictability, and <em>(ii)</em> semantic alignment that matches audio and
+                    text representations via a memory-bank contrastive loss. A differentiable Gumbel bridge enables
+                    end-to-end gradients from these objectives to the codec encoder.</p>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="method">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Method</div>
+                <h2 class="section-title">How LLM-Codec Works</h2>
+                <p class="section-desc">Three key components work together to make codec tokens LLM-friendly, without
+                    modifying model architectures.</p>
+            </div>
+
+            <div class="arch-figure">
+                
+                <div class="arch-placeholder">
+                    <div class="icon">&#x229E;</div>
+                    <p>Place architecture diagram here<br>
+                        <code
+                            style="font-size:12px;color:var(--text-muted)">&lt;img src="assets/architecture.png" alt="LLM-Codec Architecture"&gt;</code>
+                    </p>
+                </div>
+            </div>
+
+            <div class="method-cards">
+                <div class="method-card">
+                    <div class="card-icon">&#x27E1;</div>
+                    <h3>Future Token Prediction</h3>
+                    <p>K Medusa-style prediction heads with inverse-distance weighting capture multi-step dependencies,
+                        encouraging tokens that are locally predictable beyond a single step.</p>
+                </div>
+                <div class="method-card">
+                    <div class="card-icon">&#x25C8;</div>
+                    <h3>Semantic Alignment</h3>
+                    <p>Layer-wise cosine alignment and memory-bank contrastive loss ensure audio and text
+                        representations match inside the LLM, preserving linguistic content.</p>
+                </div>
+                <div class="method-card">
+                    <div class="card-icon">&#x2B21;</div>
+                    <h3>Gumbel Bridge</h3>
+                    <p>Hard Gumbel-Softmax keeps discrete tokens in the forward pass while providing smooth gradients
+                        backward, enabling end-to-end codec encoder optimization.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="samples">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Audio Samples</div>
+                <h2 class="section-title">Reconstruction Examples</h2>
+                <p class="section-desc">Codec-SUPERB-tiny examples synthesized with the paper baselines: LLM-Codec,
+                    AUV, BigCodec, UniCodec, and WavTokenizer-L. Each domain contains five examples.
+                </p>
+            </div>
+
+            <div class="tab-nav" role="tablist">
+                <button class="tab-btn active" data-tab="speech" role="tab">Speech<span class="count">5</span></button>
+                <button class="tab-btn" data-tab="music" role="tab">Music<span class="count">5</span></button>
+                <button class="tab-btn" data-tab="audio" role="tab">Audio<span class="count">5</span></button>
+            </div>
+
+            <div class="tab-panel active" id="panel-speech">
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 1 &mdash; ravdess</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Speech &middot; ID: s1 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/speech/s1_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/speech/s1_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/speech/s1_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/speech/s1_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/speech/s1_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/speech/s1_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 2 &mdash; voxceleb1</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Speech &middot; ID: s2 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/speech/s2_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/speech/s2_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/speech/s2_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/speech/s2_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/speech/s2_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/speech/s2_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 3 &mdash; voxceleb1</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Speech &middot; ID: s3 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/speech/s3_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/speech/s3_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/speech/s3_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/speech/s3_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/speech/s3_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/speech/s3_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 4 &mdash; crema_d</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Speech &middot; ID: s4 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/speech/s4_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/speech/s4_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/speech/s4_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/speech/s4_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/speech/s4_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/speech/s4_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 5 &mdash; voxceleb1</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Speech &middot; ID: s5 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/speech/s5_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/speech/s5_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/speech/s5_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/speech/s5_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/speech/s5_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/speech/s5_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-panel" id="panel-music">
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 1 &mdash; nsynth</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Music &middot; ID: m1 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/music/m1_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/music/m1_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/music/m1_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/music/m1_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/music/m1_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/music/m1_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 2 &mdash; m4singer</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Music &middot; ID: m2 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/music/m2_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/music/m2_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/music/m2_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/music/m2_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/music/m2_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/music/m2_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 3 &mdash; opensinger</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Music &middot; ID: m3 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/music/m3_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/music/m3_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/music/m3_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/music/m3_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/music/m3_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/music/m3_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 4 &mdash; gtzan</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Music &middot; ID: m4 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/music/m4_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/music/m4_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/music/m4_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/music/m4_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/music/m4_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/music/m4_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 5 &mdash; gtzan</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Music &middot; ID: m5 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/music/m5_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/music/m5_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/music/m5_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/music/m5_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/music/m5_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/music/m5_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-panel" id="panel-audio">
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 1 &mdash; esc50</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Audio &middot; ID: e1 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/env/e1_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/env/e1_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/env/e1_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/env/e1_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/env/e1_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/env/e1_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 2 &mdash; esc50</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Audio &middot; ID: e2 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/env/e2_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/env/e2_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/env/e2_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/env/e2_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/env/e2_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/env/e2_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 3 &mdash; esc50</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Audio &middot; ID: e3 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/env/e3_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/env/e3_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/env/e3_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/env/e3_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/env/e3_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/env/e3_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 4 &mdash; esc50</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Audio &middot; ID: e4 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/env/e4_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/env/e4_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/env/e4_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/env/e4_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/env/e4_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/env/e4_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+                <div class="sample-group">
+                    <div class="sample-group-title">Sample 5 &mdash; esc50</div>
+                    <div class="sample-group-meta">Codec-SUPERB-tiny Audio &middot; ID: e5 &middot; Duration: 4.0s</div>
+                    <div class="audio-grid">
+                        <div class="audio-card">
+                            <div class="model-name">Ground Truth</div>
+                            <audio controls preload="none" src="audio/env/e5_gt.wav"></audio>
+                        </div>
+                        <div class="audio-card ours">
+                            <div class="model-name">LLM-Codec</div>
+                            <audio controls preload="none" src="audio/env/e5_llmcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">AUV</div>
+                            <audio controls preload="none" src="audio/env/e5_auv.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">BigCodec</div>
+                            <audio controls preload="none" src="audio/env/e5_bigcodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">UniCodec</div>
+                            <audio controls preload="none" src="audio/env/e5_unicodec.wav"></audio>
+                        </div>
+                        <div class="audio-card">
+                            <div class="model-name">WavTokenizer-L</div>
+                            <audio controls preload="none" src="audio/env/e5_wavtok.wav"></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="results">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Results</div>
+                <h2 class="section-title">Quantitative Evaluation</h2>
+                <p class="section-desc">Reconstruction quality on Codec-SUPERB-tiny and speech coherence on SALMon
+                    benchmark.</p>
+            </div>
+
+            <h3 style="font-family:var(--serif);font-size:1.1rem;margin-bottom:16px;">Speech Reconstruction</h3>
+            <div class="results-table-wrapper" style="margin-bottom:40px;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Mel &#8595;</th>
+                            <th>STFT &#8595;</th>
+                            <th>PESQ &#8593;</th>
+                            <th>STOI &#8593;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="model-col">BigCodec</td>
+                            <td>0.810</td>
+                            <td>1.718</td>
+                            <td><span class="best">2.208</span></td>
+                            <td><span class="best">0.877</span></td>
+                        </tr>
+                        <tr>
+                            <td class="model-col">UniCodec</td>
+                            <td>0.830</td>
+                            <td>1.824</td>
+                            <td>2.022</td>
+                            <td>0.851</td>
+                        </tr>
+                        <tr>
+                            <td class="model-col">WavTokenizer-M</td>
+                            <td>0.904</td>
+                            <td>1.846</td>
+                            <td>1.843</td>
+                            <td>0.823</td>
+                        </tr>
+                        <tr>
+                            <td class="model-col">AUV (base)</td>
+                            <td>0.762</td>
+                            <td>1.648</td>
+                            <td>2.094</td>
+                            <td>0.850</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td class="model-col">LLM-Codec</td>
+                            <td><span class="best">0.683</span></td>
+                            <td><span class="best">1.507</span></td>
+                            <td>2.147</td>
+                            <td>0.858</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="font-family:var(--serif);font-size:1.1rem;margin-bottom:16px;">SALMon Speech Coherence (3 Epochs)
+            </h3>
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Speaker</th>
+                            <th>Gender</th>
+                            <th>RIR</th>
+                            <th>BG-All</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="model-col">WavTokenizer-L</td>
+                            <td>49.0</td>
+                            <td>53.0</td>
+                            <td>39.0</td>
+                            <td>53.0</td>
+                            <td>49.5</td>
+                        </tr>
+                        <tr>
+                            <td class="model-col">BigCodec</td>
+                            <td>49.5</td>
+                            <td>49.0</td>
+                            <td>47.0</td>
+                            <td>47.0</td>
+                            <td>49.5</td>
+                        </tr>
+                        <tr>
+                            <td class="model-col">AUV (3 ep)</td>
+                            <td>53.0</td>
+                            <td>54.5</td>
+                            <td>40.5</td>
+                            <td>46.5</td>
+                            <td>48.4</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td class="model-col">LLM-Codec (3 ep)</td>
+                            <td><span class="best">72.0</span></td>
+                            <td><span class="best">71.5</span></td>
+                            <td><span class="best">64.0</span></td>
+                            <td><span class="best">57.0</span></td>
+                            <td><span class="best">62.3</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    
+    <section id="citation">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Citation</div>
+                <h2 class="section-title">BibTeX</h2>
+            </div>
+            <div
+                style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;overflow-x:auto;">
+                <pre
+                    style="font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text-secondary);margin:0;">@article{chung2026llm,
+  title={LLM-Codec: Neural Audio Codec Meets Language Model Objectives},
+  author={Chung, Ho-Lam and Chen, Yiming and Lee, Hung-yi},
+  journal={arXiv preprint arXiv:2604.17852},
+  year={2026}
+}</pre>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>LLM-Codec &middot; arXiv:2604.17852 &middot; <a href="https://arxiv.org/abs/2604.17852"
+                    target="_blank" rel="noopener noreferrer">Paper</a> &middot; <a
+                    href="https://github.com/voidful/llm-codec" target="_blank" rel="noopener noreferrer">GitHub</a>
+                &middot; <a href="https://huggingface.co/voidful/llm-codec" target="_blank"
+                    rel="noopener noreferrer">Hugging Face</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('panel-' + tab).classList.add('active');
+            });
+        });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeUp 0.6s ease both';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.sample-group, .method-card').forEach(el => {
+            el.style.opacity = '0';
+            observer.observe(el);
+        });
+    </script>
+
+    
+</body>
+
+</html>

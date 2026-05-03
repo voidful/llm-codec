@@ -1,0 +1,203 @@
+{
+  "speech": [
+    {
+      "sample": "s1",
+      "split": "Speech",
+      "source": "ravdess",
+      "ground_truth": "webpage/audio/speech/s1_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/speech/s1_llmcodec.wav",
+        "auv": "webpage/audio/speech/s1_auv.wav",
+        "bigcodec": "webpage/audio/speech/s1_bigcodec.wav",
+        "unicodec": "webpage/audio/speech/s1_unicodec.wav",
+        "wavtok": "webpage/audio/speech/s1_wavtok.wav"
+      }
+    },
+    {
+      "sample": "s2",
+      "split": "Speech",
+      "source": "voxceleb1",
+      "ground_truth": "webpage/audio/speech/s2_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/speech/s2_llmcodec.wav",
+        "auv": "webpage/audio/speech/s2_auv.wav",
+        "bigcodec": "webpage/audio/speech/s2_bigcodec.wav",
+        "unicodec": "webpage/audio/speech/s2_unicodec.wav",
+        "wavtok": "webpage/audio/speech/s2_wavtok.wav"
+      }
+    },
+    {
+      "sample": "s3",
+      "split": "Speech",
+      "source": "voxceleb1",
+      "ground_truth": "webpage/audio/speech/s3_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/speech/s3_llmcodec.wav",
+        "auv": "webpage/audio/speech/s3_auv.wav",
+        "bigcodec": "webpage/audio/speech/s3_bigcodec.wav",
+        "unicodec": "webpage/audio/speech/s3_unicodec.wav",
+        "wavtok": "webpage/audio/speech/s3_wavtok.wav"
+      }
+    },
+    {
+      "sample": "s4",
+      "split": "Speech",
+      "source": "crema_d",
+      "ground_truth": "webpage/audio/speech/s4_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/speech/s4_llmcodec.wav",
+        "auv": "webpage/audio/speech/s4_auv.wav",
+        "bigcodec": "webpage/audio/speech/s4_bigcodec.wav",
+        "unicodec": "webpage/audio/speech/s4_unicodec.wav",
+        "wavtok": "webpage/audio/speech/s4_wavtok.wav"
+      }
+    },
+    {
+      "sample": "s5",
+      "split": "Speech",
+      "source": "voxceleb1",
+      "ground_truth": "webpage/audio/speech/s5_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/speech/s5_llmcodec.wav",
+        "auv": "webpage/audio/speech/s5_auv.wav",
+        "bigcodec": "webpage/audio/speech/s5_bigcodec.wav",
+        "unicodec": "webpage/audio/speech/s5_unicodec.wav",
+        "wavtok": "webpage/audio/speech/s5_wavtok.wav"
+      }
+    }
+  ],
+  "music": [
+    {
+      "sample": "m1",
+      "split": "Music",
+      "source": "nsynth",
+      "ground_truth": "webpage/audio/music/m1_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/music/m1_llmcodec.wav",
+        "auv": "webpage/audio/music/m1_auv.wav",
+        "bigcodec": "webpage/audio/music/m1_bigcodec.wav",
+        "unicodec": "webpage/audio/music/m1_unicodec.wav",
+        "wavtok": "webpage/audio/music/m1_wavtok.wav"
+      }
+    },
+    {
+      "sample": "m2",
+      "split": "Music",
+      "source": "m4singer",
+      "ground_truth": "webpage/audio/music/m2_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/music/m2_llmcodec.wav",
+        "auv": "webpage/audio/music/m2_auv.wav",
+        "bigcodec": "webpage/audio/music/m2_bigcodec.wav",
+        "unicodec": "webpage/audio/music/m2_unicodec.wav",
+        "wavtok": "webpage/audio/music/m2_wavtok.wav"
+      }
+    },
+    {
+      "sample": "m3",
+      "split": "Music",
+      "source": "opensinger",
+      "ground_truth": "webpage/audio/music/m3_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/music/m3_llmcodec.wav",
+        "auv": "webpage/audio/music/m3_auv.wav",
+        "bigcodec": "webpage/audio/music/m3_bigcodec.wav",
+        "unicodec": "webpage/audio/music/m3_unicodec.wav",
+        "wavtok": "webpage/audio/music/m3_wavtok.wav"
+      }
+    },
+    {
+      "sample": "m4",
+      "split": "Music",
+      "source": "gtzan",
+      "ground_truth": "webpage/audio/music/m4_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/music/m4_llmcodec.wav",
+        "auv": "webpage/audio/music/m4_auv.wav",
+        "bigcodec": "webpage/audio/music/m4_bigcodec.wav",
+        "unicodec": "webpage/audio/music/m4_unicodec.wav",
+        "wavtok": "webpage/audio/music/m4_wavtok.wav"
+      }
+    },
+    {
+      "sample": "m5",
+      "split": "Music",
+      "source": "gtzan",
+      "ground_truth": "webpage/audio/music/m5_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/music/m5_llmcodec.wav",
+        "auv": "webpage/audio/music/m5_auv.wav",
+        "bigcodec": "webpage/audio/music/m5_bigcodec.wav",
+        "unicodec": "webpage/audio/music/m5_unicodec.wav",
+        "wavtok": "webpage/audio/music/m5_wavtok.wav"
+      }
+    }
+  ],
+  "env": [
+    {
+      "sample": "e1",
+      "split": "Audio",
+      "source": "esc50",
+      "ground_truth": "webpage/audio/env/e1_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/env/e1_llmcodec.wav",
+        "auv": "webpage/audio/env/e1_auv.wav",
+        "bigcodec": "webpage/audio/env/e1_bigcodec.wav",
+        "unicodec": "webpage/audio/env/e1_unicodec.wav",
+        "wavtok": "webpage/audio/env/e1_wavtok.wav"
+      }
+    },
+    {
+      "sample": "e2",
+      "split": "Audio",
+      "source": "esc50",
+      "ground_truth": "webpage/audio/env/e2_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/env/e2_llmcodec.wav",
+        "auv": "webpage/audio/env/e2_auv.wav",
+        "bigcodec": "webpage/audio/env/e2_bigcodec.wav",
+        "unicodec": "webpage/audio/env/e2_unicodec.wav",
+        "wavtok": "webpage/audio/env/e2_wavtok.wav"
+      }
+    },
+    {
+      "sample": "e3",
+      "split": "Audio",
+      "source": "esc50",
+      "ground_truth": "webpage/audio/env/e3_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/env/e3_llmcodec.wav",
+        "auv": "webpage/audio/env/e3_auv.wav",
+        "bigcodec": "webpage/audio/env/e3_bigcodec.wav",
+        "unicodec": "webpage/audio/env/e3_unicodec.wav",
+        "wavtok": "webpage/audio/env/e3_wavtok.wav"
+      }
+    },
+    {
+      "sample": "e4",
+      "split": "Audio",
+      "source": "esc50",
+      "ground_truth": "webpage/audio/env/e4_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/env/e4_llmcodec.wav",
+        "auv": "webpage/audio/env/e4_auv.wav",
+        "bigcodec": "webpage/audio/env/e4_bigcodec.wav",
+        "unicodec": "webpage/audio/env/e4_unicodec.wav",
+        "wavtok": "webpage/audio/env/e4_wavtok.wav"
+      }
+    },
+    {
+      "sample": "e5",
+      "split": "Audio",
+      "source": "esc50",
+      "ground_truth": "webpage/audio/env/e5_gt.wav",
+      "reconstructions": {
+        "llmcodec": "webpage/audio/env/e5_llmcodec.wav",
+        "auv": "webpage/audio/env/e5_auv.wav",
+        "bigcodec": "webpage/audio/env/e5_bigcodec.wav",
+        "unicodec": "webpage/audio/env/e5_unicodec.wav",
+        "wavtok": "webpage/audio/env/e5_wavtok.wav"
+      }
+    }
+  ]
+}
